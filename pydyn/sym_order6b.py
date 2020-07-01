@@ -128,6 +128,9 @@ class sym_order6b:
         self.signals['Pm'] = p0
         self.signals['Tm'] = p0
         
+        self.signals['omega'] = 1
+        self.signals['delta'] = delta0
+
         self.states['omega'] = 1
         self.states['delta'] = delta0
         self.states['Eqp'] = Eqp0
@@ -372,3 +375,9 @@ class sym_order6b:
                 self.states['omega'] = self.states0['omega'] + 1/6 * (self.dsteps['omega'][0] + 2*self.dsteps['omega'][1] + 2*self.dsteps['omega'][2] + k_omega)
                 self.states['delta'] = self.states0['delta'] + 1/6 * (self.dsteps['delta'][0] + 2*self.dsteps['delta'][1] + 2*self.dsteps['delta'][2] + k_delta)
                 self.signals['Tm'] = self.signals['Pm'] / omega_0
+        
+        
+        self.signals['omega'] = self.states['omega']
+        self.signals['delta'] = self.states['delta']
+
+

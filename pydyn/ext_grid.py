@@ -48,6 +48,10 @@ class ext_grid:
         self.signals['P'] = p0
         self.signals['Pm'] = p0
         
+        self.signals['omega'] = 1
+        self.signals['delta'] = delta0
+
+        
         self.states['Eq'] = np.abs(Eq0)       
         self.states['omega'] = 1
         self.states['delta'] = delta0
@@ -123,5 +127,7 @@ class ext_grid:
                 self.states['omega'] = self.states0['omega'] + 1/6 * (self.dsteps['omega'][0] + 2*self.dsteps['omega'][1] + 2*self.dsteps['omega'][2] + k_omega)
                 self.states['delta'] = self.states0['delta'] + 1/6 * (self.dsteps['delta'][0] + 2*self.dsteps['delta'][1] + 2*self.dsteps['delta'][2] + k_delta)
         
-    
+        self.signals['omega'] = self.states['omega']
+        self.signals['delta'] = self.states['delta']
+            
     

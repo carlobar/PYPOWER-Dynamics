@@ -9,10 +9,12 @@ PYPOWER-Dynamics
 Events Class
 Sets up and handles events in the simulation
 """
-
+from pdb import set_trace as bp
 import numpy as np
 from pypower.idx_bus import BUS_I, BUS_TYPE, PD, QD, GS, BS, BUS_AREA, \
     VM, VA, VMAX, VMIN, LAM_P, LAM_Q, MU_VMAX, MU_VMIN, REF
+
+
 
 class events:
     def __init__(self, filename):
@@ -33,9 +35,17 @@ class events:
                 if tokens[1].strip() in ['SIGNAL', 'FAULT', 'LOAD', 'STATE']:
                     self.event_stack.append([float(tokens[0].strip()), tokens[1].strip(), tokens[2].strip(), tokens[3].strip(), tokens[4].strip()])
                 
-                elif tokens[1].strip() in ['CLEAR_FAULT', 'TRIP_BRANCH']:
+                elif tokens[1].strip() in ['CLEAR_FAULT', 'TRIP_BRANCH', 'DISABLE_BRANCH', 'ENABLE_BRANCH']:
                     self.event_stack.append([float(tokens[0].strip()), tokens[1].strip(), tokens[2].strip()])
+
+                elif tokens[1].strip() in ['PAUSE']:
+                    self.event_stack.append( [float(tokens[0].strip()), tokens[1].strip()] )
                     
+
+                elif tokens[1].strip() in ['DEBUG_C']:
+                    self.event_stack.append([float(tokens[0].strip()), tokens[1].strip(), tokens[2].strip()])
+
+
         f.close()
         
     def handle_events(self, t, elements, ppc, baseMVA):
@@ -110,18 +120,52 @@ class events:
                     
                     print('TRIP_BRANCH event at t=' + str(t) + 's on branch "' + str(branch_id) + '".')
                 
+                if event_type == 'DISABLE_BRANCH':
+                    branch_id = int(self.event_stack[0][2])
+                    ppc["branch"][branch_id, 10] = 0
+                    refactorise = True
+                    
+                    print('DISABLE_BRANCH event at t=' + str(t) + 's on branch "' + str(branch_id) + '"...')
+                    print('... from node ' + str(ppc["branch"][branch_id, 0]) + ' to node ' + str(ppc["branch"][branch_id, 1]) +'.')
+                    #bp()
+                
+                if event_type == 'ENABLE_BRANCH':
+                    branch_id = int(self.event_stack[0][2])
+                    ppc["branch"][branch_id, 10] = 1
+                    refactorise = True
+                    
+                    print('ENABLE_BRANCH event at t=' + str(t) + 's on branch "' + str(branch_id) + '".')
+                
                 if event_type == 'LOAD':
                     bus_id = int(self.event_stack[0][2])
                     Pl = float(self.event_stack[0][3])
                     Ql = float(self.event_stack[0][4])
+
+                    print('LOAD event at t=' + str(t) + 's on bus at row "' + str(bus_id) + '".')
+                    print('\tCurrent load: S = ' + str(ppc["bus"][bus_id, PD]) + ' MW + j' + str(ppc["bus"][bus_id, QD]) + ' MVAr.')
                     
                     ppc["bus"][bus_id, PD] = Pl
                     ppc["bus"][bus_id, QD] = Ql
                     
                     refactorise = True
                     
-                    print('LOAD event at t=' + str(t) + 's on bus at row "' + str(bus_id) + '" with S = ' + str(Pl) + ' MW + j' + str(Ql) + ' MVAr.')
+                    print('\tNew load: S = ' + str(Pl) + ' MW + j' + str(Ql) + ' MVAr.')
                     
+                if event_type == 'PAUSE':
+                    print('PAUSE event at t=' + str(t) + 's' )
+                    bp()
+
+                if event_type == 'DEBUG_C':
+                    c_name = self.event_stack[0][2]
+                    print('DEBUG_C event at t=' + str(t) + 's on element ' + c_name )
+                    try:
+                        element = elements[c_name]
+                    except:
+                        print('Element '+c_name+" doesn't exists")
+                    bp()
+                    element.solve_step(0.001,0) 
+
+
                 del self.event_stack[0]
                 
         return ppc, refactorise

@@ -19,6 +19,19 @@ def gain_block(yi,p):
     yo = p * yi
     
     return yo
+
+# Divide block    
+# yo = yi / p
+# p is a scalar gain coefficient
+def gain_block(yi,p):
+    if p != 0:
+        yo = yi / p
+    else:
+        print('Error: division by zero, ignoring dividion operation')
+        yo = yi
+    return yo
+    
+
     
 # Integrator block    
 # K / sT    
